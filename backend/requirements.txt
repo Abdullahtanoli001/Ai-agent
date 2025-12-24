@@ -6,3 +6,7 @@ langchain-classic
 duckduckgo-search
 requests
 python-dotenv
+streamlit
+langchain
+langchain-community
+duckduckgo-search
