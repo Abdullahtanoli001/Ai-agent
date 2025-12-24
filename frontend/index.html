@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Weather & News Agent</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .particle:nth-child(1) { width: 80px; height: 80px; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 60px; height: 60px; left: 30%; animation-delay: 2s; }
+        .particle:nth-child(3) { width: 100px; height: 100px; left: 50%; animation-delay: 4s; }
+        .particle:nth-child(4) { width: 70px; height: 70px; left: 70%; animation-delay: 1s; }
+        .particle:nth-child(5) { width: 90px; height: 90px; left: 90%; animation-delay: 3s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) scale(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-100vh) scale(1); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            font-weight: 800;
+            text-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 15px 35px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .icon {
+            font-size: 2.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 18px 24px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            background: white;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 6px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(240, 147, 251, 0.1));
+            border-radius: 20px;
+            border-left: 6px solid #667eea;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .result h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .result-content {
+            color: #333;
+            font-size: 1rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .weather-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .weather-item {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .weather-item .label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .weather-item .value {
+            color: #667eea;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .quick-queries {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .quick-query-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(240, 147, 251, 0.1));
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .quick-query-btn:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .error {
+            background: linear-gradient(135deg, rgba(255, 82, 82, 0.1), rgba(255, 120, 120, 0.1));
+            border-left-color: #ff5252;
+        }
+
+        .error h3 {
+            color: #ff5252;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5rem; }
+            .card { padding: 25px; }
+            .tabs { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo">🤖</div>
+            <h1>AI Weather & News Agent</h1>
+            <p>Powered by LangChain, Groq AI & ReAct Framework</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('agent')">
+                🤖 AI Agent
+            </button>
+            <button class="tab-btn" onclick="switchTab('weather')">
+                ☀️ Weather
+            </button>
+            <button class="tab-btn" onclick="switchTab('news')">
+                📰 News Search
+            </button>
+        </div>
+
+        <!-- AI Agent Card -->
+        <div class="card active" id="agent-card">
+            <h2><span class="icon">🤖</span> AI Agent Assistant</h2>
+            <p style="color: #666; margin-bottom: 25px;">Ask anything! The AI agent will use tools to find answers.</p>
+            
+            <div class="quick-queries">
+                <button class="quick-query-btn" onclick="setQuery('agent', 'Find the capital of Pakistan, then find its current weather')">
+                    Capital Weather Query
+                </button>
+                <button class="quick-query-btn" onclick="setQuery('agent', 'What is the weather in Karachi today?')">
+                    Karachi Weather
+                </button>
+                <button class="quick-query-btn" onclick="setQuery('agent', 'Search for latest news about AI in Pakistan')">
+                    AI News Pakistan
+                </button>
+            </div>
+
+            <div class="input-group">
+                <label for="agentQuery">Your Query</label>
+                <textarea id="agentQuery" placeholder="e.g., Find the capital of France and then get its current weather"></textarea>
+            </div>
+
+            <button class="btn" id="agentBtn" onclick="runAgent()">
+                ✨ Ask AI Agent
+            </button>
+
+            <div class="loading" id="agentLoading">
+                <div class="spinner"></div>
+                <p class="loading-text">AI Agent is thinking...</p>
+            </div>
+
+            <div class="result" id="agentResult">
+                <h3>🎯 AI Response</h3>
+                <div class="result-content" id="agentContent"></div>
+            </div>
+        </div>
+
+        <!-- Weather Card -->
+        <div class="card" id="weather-card">
+            <h2><span class="icon">☀️</span> Weather Lookup</h2>
+            
+            <div class="quick-queries">
+                <button class="quick-query-btn" onclick="setQuery('weather', 'Islamabad')">Islamabad</button>
+                <button class="quick-query-btn" onclick="setQuery('weather', 'Karachi')">Karachi</button>
+                <button class="quick-query-btn" onclick="setQuery('weather', 'Lahore')">Lahore</button>
+                <button class="quick-query-btn" onclick="setQuery('weather', 'Peshawar')">Peshawar</button>
+                <button class="quick-query-btn" onclick="setQuery('weather', 'London')">London</button>
+            </div>
+
+            <div class="input-group">
+                <label for="weatherCity">City Name</label>
+                <input type="text" id="weatherCity" placeholder="Enter city name">
+            </div>
+
+            <button class="btn" id="weatherBtn" onclick="getWeather()">
+                🌤️ Get Weather
+            </button>
+
+            <div class="loading" id="weatherLoading">
+                <div class="spinner"></div>
+                <p class="loading-text">Fetching weather data...</p>
+            </div>
+
+            <div class="result" id="weatherResult">
+                <h3>🌡️ Weather Information</h3>
+                <div id="weatherContent"></div>
+            </div>
+        </div>
+
+        <!-- News Card -->
+        <div class="card" id="news-card">
+            <h2><span class="icon">📰</span> News Search</h2>
+            
+            <div class="quick-queries">
+                <button class="quick-query-btn" onclick="setQuery('news', 'top news in Pakistan today')">Pakistan News</button>
+                <button class="quick-query-btn" onclick="setQuery('news', 'latest AI developments')">AI News</button>
+                <button class="quick-query-btn" onclick="setQuery('news', 'world news today')">World News</button>
+                <button class="quick-query-btn" onclick="setQuery('news', 'technology news')">Tech News</button>
+            </div>
+
+            <div class="input-group">
+                <label for="newsQuery">Search Query</label>
+                <input type="text" id="newsQuery" placeholder="e.g., top news in Pakistan today">
+            </div>
+
+            <button class="btn" id="newsBtn" onclick="searchNews()">
+                🔍 Search News
+            </button>
+
+            <div class="loading" id="newsLoading">
+                <div class="spinner"></div>
+                <p class="loading-text">Searching the web...</p>
+            </div>
+
+            <div class="result" id="newsResult">
+                <h3>📋 Search Results</h3>
+                <div class="result-content" id="newsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5002';
+
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update cards
+            document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
+            document.getElementById(`${tab}-card`).classList.add('active');
+        }
+
+        function setQuery(type, query) {
+            if (type === 'agent') {
+                document.getElementById('agentQuery').value = query;
+            } else if (type === 'weather') {
+                document.getElementById('weatherCity').value = query;
+            } else if (type === 'news') {
+                document.getElementById('newsQuery').value = query;
+            }
+        }
+
+        async function runAgent() {
+            const query = document.getElementById('agentQuery').value;
+            if (!query.trim()) {
+                alert('Please enter a query!');
+                return;
+            }
+
+            const loading = document.getElementById('agentLoading');
+            const result = document.getElementById('agentResult');
+            const content = document.getElementById('agentContent');
+            const btn = document.getElementById('agentBtn');
+
+            loading.classList.add('show');
+            result.classList.remove('show');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/agent`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    content.textContent = data.output;
+                    result.classList.remove('error');
+                    result.classList.add('show');
+                } else {
+                    throw new Error(data.error || 'Agent failed');
+                }
+            } catch (error) {
+                content.textContent = `Error: ${error.message}\n\nMake sure backend is running on ${API_URL}`;
+                result.classList.add('error');
+                result.classList.add('show');
+            } finally {
+                loading.classList.remove('show');
+                btn.disabled = false;
+            }
+        }
+
+        async function getWeather() {
+            const city = document.getElementById('weatherCity').value;
+            if (!city.trim()) {
+                alert('Please enter a city name!');
+                return;
+            }
+
+            const loading = document.getElementById('weatherLoading');
+            const result = document.getElementById('weatherResult');
+            const content = document.getElementById('weatherContent');
+            const btn = document.getElementById('weatherBtn');
+
+            loading.classList.add('show');
+            result.classList.remove('show');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/weather`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ city })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.weather.current) {
+                    const weather = data.weather.current;
+                    content.innerHTML = `
+                        <div class="weather-card">
+                            <div class="weather-item">
+                                <div class="label">Temperature</div>
+                                <div class="value">${weather.temperature}°C</div>
+                            </div>
+                            <div class="weather-item">
+                                <div class="label">Feels Like</div>
+                                <div class="value">${weather.feelslike}°C</div>
+                            </div>
+                            <div class="weather-item">
+                                <div class="label">Weather</div>
+                                <div class="value">${weather.weather_descriptions[0]}</div>
+                            </div>
+                            <div class="weather-item">
+                                <div class="label">Humidity</div>
+                                <div class="value">${weather.humidity}%</div>
+                            </div>
+                            <div class="weather-item">
+                                <div class="label">Wind Speed</div>
+                                <div class="value">${weather.wind_speed} km/h</div>
+                            </div>
+                            <div class="weather-item">
+                                <div class="label">Pressure</div>
+                                <div class="value">${weather.pressure} mb</div>
+                            </div>
+                        </div>
+                    `;
+                    result.classList.remove('error');
+                    result.classList.add('show');
+                } else {
+                    throw new Error(data.error || 'Weather data not available');
+                }
+            } catch (error) {
+                content.innerHTML = `<p>Error: ${error.message}</p>`;
+                result.classList.add('error');
+                result.classList.add('show');
+            } finally {
+                loading.classList.remove('show');
+                btn.disabled = false;
+            }
+        }
+
+        async function searchNews() {
+            const query = document.getElementById('newsQuery').value;
+            if (!query.trim()) {
+                alert('Please enter a search query!');
+                return;
+            }
+
+            const loading = document.getElementById('newsLoading');
+            const result = document.getElementById('newsResult');
+            const content = document.getElementById('newsContent');
+            const btn = document.getElementById('newsBtn');
+
+            loading.classList.add('show');
+            result.classList.remove('show');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/search`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    content.textContent = data.result;
+                    result.classList.remove('error');
+                    result.classList.add('show');
+                } else {
+                    throw new Error(data.error || 'Search failed');
+                }
+            } catch (error) {
+                content.textContent = `Error: ${error.message}`;
+                result.classList.add('error');
+                result.classList.add('show');
+            } finally {
+                loading.classList.remove('show');
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
